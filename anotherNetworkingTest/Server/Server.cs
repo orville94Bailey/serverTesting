@@ -14,6 +14,7 @@ namespace anotherNetworkingTest.Server
         public int NumberOfClients;
         public AutoResetEvent Ev;
         public Queue<string> MessageQueue;
+        public Queue<TcpClient> ClientQueue;
     }
 
     class Server
@@ -33,7 +34,8 @@ namespace anotherNetworkingTest.Server
                 ContinueProcess = true,
                 NumberOfClients = 0,
                 Ev = new AutoResetEvent(false),
-                MessageQueue = new Queue<string>()
+                MessageQueue = new Queue<string>(),
+                ClientQueue = new Queue<TcpClient>()
             };
 
             // Console.WriteLine(System.Net.IPAddress.Parse("127.0.0.1"));
@@ -49,6 +51,9 @@ namespace anotherNetworkingTest.Server
 
                 // Start listeneing for new connections
                 Console.WriteLine("Waiting for a connection...");
+
+                ThreadPool.QueueUserWorkItem(new WaitCallback(MessageQueueProcessor.Process), SharedStateObj);
+
                 while (TestingCycle > 0)
                 {
                     TcpClient handler = Listener.AcceptTcpClient();
@@ -56,6 +61,7 @@ namespace anotherNetworkingTest.Server
                     if(handler != null)
                     {
                         Console.WriteLine("Client# {0} accepted!", ++ClientNbr);
+                        SharedStateObj.ClientQueue.Enqueue(handler);
                         //An incoming connection needs to be processed
                         ClientHandler client = new ClientHandler(handler);
                         ThreadPool.QueueUserWorkItem(new WaitCallback(client.Process), SharedStateObj);
@@ -83,6 +89,34 @@ namespace anotherNetworkingTest.Server
             Console.Read();
         }
         
+    }
+
+    class MessageQueueProcessor
+    {
+        public static void Process(Object o)
+        {
+            SharedState SharedStateObj = (SharedState)o;
+
+            while (SharedStateObj.ContinueProcess)
+            {
+                Thread.Sleep(30000);
+
+                /* Spit out messages after 30 seconds.
+                 */
+
+                Console.WriteLine("################\n################");
+                Console.WriteLine("Message queue processing\n");
+                lock (SharedStateObj.MessageQueue)
+                {
+                    foreach (var item in SharedStateObj.MessageQueue)
+                    {
+                        Console.WriteLine(item);
+                    }
+
+                    SharedStateObj.MessageQueue.Clear();
+                }
+            }        
+        }
     }
 
     class ClientHandler
@@ -127,9 +161,9 @@ namespace anotherNetworkingTest.Server
                                 SharedStateObj.MessageQueue.Enqueue(data + " " + ClientSocket.Client.RemoteEndPoint);
                             }
 
-                            //Echo the data back to the client
-                            byte[] sendingBytes = Encoding.ASCII.GetBytes(data);
-                            networkStream.Write(sendingBytes, 0, sendingBytes.Length);
+                            ////Echo the data back to the client
+                            //byte[] sendingBytes = Encoding.ASCII.GetBytes(data);
+                            //networkStream.Write(sendingBytes, 0, sendingBytes.Length);
 
                             if (data.Equals("quit")) break;
                         }
