@@ -28,7 +28,13 @@ namespace anotherNetworkingTest.Server
 
         public static void StartListening()
         {
-            SharedStateObj = new SharedState() { ContinueProcess = true, NumberOfClients = 0, Ev = new AutoResetEvent(false), MessageQueue = new Queue<string>() };
+            SharedStateObj = new SharedState()
+            {
+                ContinueProcess = true,
+                NumberOfClients = 0,
+                Ev = new AutoResetEvent(false),
+                MessageQueue = new Queue<string>()
+            };
 
             // Console.WriteLine(System.Net.IPAddress.Parse("127.0.0.1"));
 
@@ -118,7 +124,7 @@ namespace anotherNetworkingTest.Server
                             Console.WriteLine("Text Received: {0}", data);
                             lock (SharedStateObj.MessageQueue)
                             {
-                                SharedStateObj.MessageQueue.Enqueue(data);
+                                SharedStateObj.MessageQueue.Enqueue(data + " " + ClientSocket.Client.RemoteEndPoint);
                             }
 
                             //Echo the data back to the client
