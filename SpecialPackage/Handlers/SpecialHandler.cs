@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using MessagingBase;
-using DefaultPackage.Messages;
+using SpecialPackage.Messages;
 
-namespace DefaultPackage.Handlers
+namespace SpecialPackage.Handlers
 {
     class SpecialHandler : BaseMessageHandler
     {

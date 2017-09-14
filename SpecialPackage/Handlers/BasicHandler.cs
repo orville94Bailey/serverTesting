@@ -1,11 +1,11 @@
-﻿using DefaultPackage.Messages;
+﻿using SpecialPackage.Messages;
 using MessagingBase;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace DefaultPackage.Handlers
+namespace SpecialPackage.Handlers
 {
     public class BasicMessageHandler : BaseMessageHandler
     {
