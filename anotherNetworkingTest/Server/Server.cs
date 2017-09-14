@@ -104,7 +104,7 @@ namespace anotherNetworkingTest.Server
 
 
             // Get a list of all types in the default dll assembly.
-            var holder = Assembly.LoadFrom(AppDomain.CurrentDomain.BaseDirectory +  @"DefaultPackage.dll").GetTypes().ToList(); //Assembly.LoadFrom(DefaultPackage) .GetTypes().ToList();
+            var holder = Assembly.LoadFrom(AppDomain.CurrentDomain.BaseDirectory +  @"DefaultPackage.dll").GetTypes().ToList(); 
 
             List<BaseMessageHandler> handlerHolder = new List<BaseMessageHandler>();
 
