@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using MessagingBase;
 using System.Reflection;
+using System.Configuration;
 
 namespace anotherNetworkingTest.Server
 {
@@ -104,7 +105,8 @@ namespace anotherNetworkingTest.Server
 
 
             // Get a list of all types in the default dll assembly.
-            var holder = Assembly.LoadFrom(AppDomain.CurrentDomain.BaseDirectory +  @"DefaultPackage.dll").GetTypes().ToList(); 
+            var currentPackage = ConfigurationManager.AppSettings["RulesPackage"];
+            var holder = Assembly.LoadFrom(AppDomain.CurrentDomain.BaseDirectory + currentPackage + @".dll").GetTypes().ToList(); 
 
             List<BaseMessageHandler> handlerHolder = new List<BaseMessageHandler>();
 

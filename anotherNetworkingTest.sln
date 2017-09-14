@@ -5,6 +5,7 @@ VisualStudioVersion = 15.0.26430.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "anotherNetworkingTest", "anotherNetworkingTest\anotherNetworkingTest.csproj", "{4A5496FD-BC4E-4CBF-88E9-74233107D7D5}"
 	ProjectSection(ProjectDependencies) = postProject
+		{B0F3832E-8DD8-41F4-AB1A-6FBCD16B7BD1} = {B0F3832E-8DD8-41F4-AB1A-6FBCD16B7BD1}
 		{97C05238-E983-4F9E-8C86-D71E5FDA62B2} = {97C05238-E983-4F9E-8C86-D71E5FDA62B2}
 		{F72B0C3D-4058-4C42-B60D-2DE84492676A} = {F72B0C3D-4058-4C42-B60D-2DE84492676A}
 	EndProjectSection
@@ -21,6 +22,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DefaultPackage", "DefaultPa
 	ProjectSection(ProjectDependencies) = postProject
 		{F72B0C3D-4058-4C42-B60D-2DE84492676A} = {F72B0C3D-4058-4C42-B60D-2DE84492676A}
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpecialPackage", "SpecialPackage\SpecialPackage.csproj", "{B0F3832E-8DD8-41F4-AB1A-6FBCD16B7BD1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -44,6 +47,10 @@ Global
 		{97C05238-E983-4F9E-8C86-D71E5FDA62B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{97C05238-E983-4F9E-8C86-D71E5FDA62B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{97C05238-E983-4F9E-8C86-D71E5FDA62B2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0F3832E-8DD8-41F4-AB1A-6FBCD16B7BD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0F3832E-8DD8-41F4-AB1A-6FBCD16B7BD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0F3832E-8DD8-41F4-AB1A-6FBCD16B7BD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0F3832E-8DD8-41F4-AB1A-6FBCD16B7BD1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
