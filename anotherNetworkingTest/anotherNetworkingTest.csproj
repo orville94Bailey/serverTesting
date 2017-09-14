@@ -47,13 +47,17 @@
     <Compile Include="Server\Server.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\DefaultPackage\DefaultPackage.csproj">
       <Project>{97c05238-e983-4f9e-8c86-d71e5fda62b2}</Project>
       <Name>DefaultPackage</Name>
     </ProjectReference>
+    <ProjectReference Include="..\MessagingBase\MessagingBase.csproj">
+      <Project>{f72b0c3d-4058-4c42-b60d-2de84492676a}</Project>
+      <Name>MessagingBase</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -39,7 +39,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Handlers\BasicHandler.cs" />
+    <Compile Include="Handlers\SpecialHandler.cs" />
     <Compile Include="Messages\BasicMessage.cs" />
+    <Compile Include="Messages\SpecialMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />

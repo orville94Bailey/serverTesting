@@ -13,5 +13,7 @@ namespace MessagingBase
         {
             get { return null; }
         }
+
+        public abstract void ProcessMessage(IMessage message);
     }
 }

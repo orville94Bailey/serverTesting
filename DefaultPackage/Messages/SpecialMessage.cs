@@ -6,18 +6,20 @@ using System.Text;
 
 namespace DefaultPackage.Messages
 {
-    public class BasicMessage : IMessage
+    public class SpecialMessage : IMessage
     {
         public string Data { get; set; }
 
-        public BasicMessage(string data)
+        public SpecialMessage(string data)
         {
             this.Data = data;
         }
 
         public void ProcessMessage()
         {
-            Console.WriteLine(this.Data);
+            Console.WriteLine(Data);
+            Console.WriteLine(Data);
         }
+
     }
 }

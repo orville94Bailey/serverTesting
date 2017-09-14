@@ -1,10 +1,13 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using MessagingBase;
+using System.Reflection;
 
 namespace anotherNetworkingTest.Server
 {
@@ -13,7 +16,7 @@ namespace anotherNetworkingTest.Server
         public bool ContinueProcess;
         public int NumberOfClients;
         public AutoResetEvent Ev;
-        public Queue<string> MessageQueue;
+        public Queue<IMessage> MessageQueue;
         public Queue<TcpClient> ClientQueue;
     }
 
@@ -34,7 +37,7 @@ namespace anotherNetworkingTest.Server
                 ContinueProcess = true,
                 NumberOfClients = 0,
                 Ev = new AutoResetEvent(false),
-                MessageQueue = new Queue<string>(),
+                MessageQueue = new Queue<IMessage>(),
                 ClientQueue = new Queue<TcpClient>()
             };
 
@@ -97,12 +100,42 @@ namespace anotherNetworkingTest.Server
         {
             SharedState SharedStateObj = (SharedState)o;
 
+            Dictionary<Type, List<BaseMessageHandler>> handlerList = new Dictionary<Type, List<BaseMessageHandler>>();
+
+
+            // Get a list of all types in the default dll assembly.
+            var holder = Assembly.LoadFrom(AppDomain.CurrentDomain.BaseDirectory +  @"DefaultPackage.dll").GetTypes().ToList(); //Assembly.LoadFrom(DefaultPackage) .GetTypes().ToList();
+
+            List<BaseMessageHandler> handlerHolder = new List<BaseMessageHandler>();
+
+
+            foreach (var item in holder)
+            {
+                // Go through each type and check to see if it extends BaseMessageHandler and that it has a parameterless constructor
+                if(item.BaseType.Equals(typeof(BaseMessageHandler)) && !item.GetConstructor(Type.EmptyTypes).Equals(null))
+                {
+                    // Instanciates objects that match the above criterium
+                    handlerHolder.Add((BaseMessageHandler)Activator.CreateInstance(item));
+                }
+            }
+
+            //build dictionary of lists based on type of messages
+            foreach (var item in handlerHolder)
+            {
+                if(!handlerList.Keys.Contains(item.HandledMessageType))
+                {
+                    handlerList.Add(item.HandledMessageType, new List<BaseMessageHandler>());
+                    handlerList[item.HandledMessageType].Add(item);
+                }
+            }
+
             while (SharedStateObj.ContinueProcess)
             {
-                Thread.Sleep(30000);
+                Thread.Sleep(20000);
 
                 /* Spit out messages after 30 seconds.
                  */
+
 
                 Console.WriteLine("################\n################");
                 Console.WriteLine("Message queue processing\n");
@@ -110,7 +143,10 @@ namespace anotherNetworkingTest.Server
                 {
                     foreach (var item in SharedStateObj.MessageQueue)
                     {
-                        Console.WriteLine(item);
+                        foreach (var handler in handlerList[item.GetType()])
+                        {
+                            handler.ProcessMessage(item);
+                        }
                     }
 
                     SharedStateObj.MessageQueue.Clear();
@@ -136,6 +172,8 @@ namespace anotherNetworkingTest.Server
             //incoming data from client
             string data = null;
 
+            IMessage receivedMessage = null;
+
             //data buffer coming in
             byte[] bytes;
 
@@ -154,11 +192,13 @@ namespace anotherNetworkingTest.Server
                         {
                             data = Encoding.ASCII.GetString(bytes, 0, BytesRead);
 
+                            receivedMessage = (IMessage)JsonConvert.DeserializeObject(data, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Auto });
+
                             // show the data in the console
                             Console.WriteLine("Text Received: {0}", data);
                             lock (SharedStateObj.MessageQueue)
                             {
-                                SharedStateObj.MessageQueue.Enqueue(data + " " + ClientSocket.Client.RemoteEndPoint);
+                                SharedStateObj.MessageQueue.Enqueue(receivedMessage);
                             }
 
                             ////Echo the data back to the client

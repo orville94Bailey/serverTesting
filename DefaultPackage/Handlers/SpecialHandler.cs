@@ -1,21 +1,19 @@
-﻿using DefaultPackage.Messages;
-using MessagingBase;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MessagingBase;
+using DefaultPackage.Messages;
 
 namespace DefaultPackage.Handlers
 {
-    public class BasicMessageHandler : BaseMessageHandler
+    class SpecialHandler : BaseMessageHandler
     {
-        /* Before messages make it here they need to be deserialized and turned back into an object.
-         */
         public string HandlerData
         {
             get
             {
-                return "BasicHandler";
+                return "SpecialHandler";
             }
             set
             {
@@ -25,7 +23,7 @@ namespace DefaultPackage.Handlers
 
         public override Type HandledMessageType
         {
-            get { return typeof(BasicMessage); }
+            get { return typeof(SpecialMessage); }
         }
 
         public override void ProcessMessage(IMessage message)
@@ -34,7 +32,7 @@ namespace DefaultPackage.Handlers
             message.ProcessMessage();
         }
 
-        public BasicMessageHandler()
+        public SpecialHandler()
         {
 
         }
