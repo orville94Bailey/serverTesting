@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MessagingBase;
 using SpecialPackage.Messages;
+using NetworkingCore;
 
 namespace SpecialPackage.Handlers
 {
@@ -26,7 +23,13 @@ namespace SpecialPackage.Handlers
             get { return typeof(SpecialMessage); }
         }
 
-        public override void ProcessMessage(IMessage message)
+        public override void ClientProcessMessage(IMessage message)
+        {
+            Console.WriteLine(HandlerData);
+            message.ProcessMessage();
+        }
+
+        public override void ServerProcessMessage(IMessage message, object o)
         {
             Console.WriteLine(HandlerData);
             message.ProcessMessage();

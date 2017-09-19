@@ -6,21 +6,14 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using MessagingBase;
 using System.Reflection;
 using System.Configuration;
+using DefaultPackage.Messages;
+using NetworkingCore.SharedStateObjects;
+using NetworkingCore;
 
 namespace anotherNetworkingTest.Server
 {
-    class SharedState
-    {
-        public bool ContinueProcess;
-        public int NumberOfClients;
-        public AutoResetEvent Ev;
-        public Queue<IMessage> MessageQueue;
-        public Queue<TcpClient> ClientQueue;
-    }
-
     class Server
     {
         /* Server needs a threadpool to handle incomming connections.
@@ -29,22 +22,22 @@ namespace anotherNetworkingTest.Server
          * A way to stop the server
          */
         private const int portNum = 55555;
-        private static SharedState SharedStateObj;
+        private static ServerSharedStateObject SharedStateObj;
 
         public static void StartListening()
         {
-            SharedStateObj = new SharedState()
+            SharedStateObj = new ServerSharedStateObject()
             {
                 ContinueProcess = true,
                 NumberOfClients = 0,
                 Ev = new AutoResetEvent(false),
                 MessageQueue = new Queue<IMessage>(),
-                ClientQueue = new Queue<TcpClient>()
+                ClientQueue = new Dictionary<Guid, TcpClient>()
             };
 
             // Console.WriteLine(System.Net.IPAddress.Parse("127.0.0.1"));
 
-            TcpListener Listener = new TcpListener( System.Net.IPAddress.Parse("127.0.0.1") ,portNum);
+            TcpListener Listener = new TcpListener( System.Net.IPAddress.Any ,portNum);
 
             try
             {
@@ -65,7 +58,6 @@ namespace anotherNetworkingTest.Server
                     if(handler != null)
                     {
                         Console.WriteLine("Client# {0} accepted!", ++ClientNbr);
-                        SharedStateObj.ClientQueue.Enqueue(handler);
                         //An incoming connection needs to be processed
                         ClientHandler client = new ClientHandler(handler);
                         ThreadPool.QueueUserWorkItem(new WaitCallback(client.Process), SharedStateObj);
@@ -99,7 +91,7 @@ namespace anotherNetworkingTest.Server
     {
         public static void Process(Object o)
         {
-            SharedState SharedStateObj = (SharedState)o;
+            ServerSharedStateObject SharedStateObj = (ServerSharedStateObject)o;
 
             Dictionary<Type, List<BaseMessageHandler>> handlerList = new Dictionary<Type, List<BaseMessageHandler>>();
 
@@ -127,31 +119,44 @@ namespace anotherNetworkingTest.Server
                 if(!handlerList.Keys.Contains(item.HandledMessageType))
                 {
                     handlerList.Add(item.HandledMessageType, new List<BaseMessageHandler>());
-                    handlerList[item.HandledMessageType].Add(item);
                 }
+                handlerList[item.HandledMessageType].Add(item);
             }
 
             while (SharedStateObj.ContinueProcess)
             {
-                Thread.Sleep(20000);
-
-                /* Spit out messages after 30 seconds.
-                 */
-
-
-                Console.WriteLine("################\n################");
-                Console.WriteLine("Message queue processing\n");
-                lock (SharedStateObj.MessageQueue)
+                if(SharedStateObj.MessageQueue.Count > 0)
                 {
-                    foreach (var item in SharedStateObj.MessageQueue)
+                    Console.WriteLine("################\n################");
+                    Console.WriteLine("Message queue processing\n");
+                    lock (SharedStateObj.MessageQueue)
                     {
-                        foreach (var handler in handlerList[item.GetType()])
+                        foreach (var item in SharedStateObj.MessageQueue)
                         {
-                            handler.ProcessMessage(item);
-                        }
-                    }
+                            if(handlerList.Keys.Contains(item.GetType()))
+                            {
+                                foreach (var handler in handlerList[item.GetType()])
+                                {
+                                    handler.ServerProcessMessage(item, SharedStateObj);
 
-                    SharedStateObj.MessageQueue.Clear();
+                                    var DataToSend = "Server Response" + DateTime.Now.ToString("HH:mm:ss");
+                                    var message = new BasicMessage(DataToSend, "server");
+
+                                    var jsonMessage = JsonConvert.SerializeObject(message, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Objects });
+
+                                    Byte[] sendBytes = Encoding.ASCII.GetBytes(jsonMessage);
+
+                                    foreach (var client in SharedStateObj.ClientQueue.Keys)
+                                    {
+                                        Console.WriteLine("Message sent to " + client.ToString());
+                                        SharedStateObj.ClientQueue[client].GetStream().Write(sendBytes, 0, sendBytes.Length);
+                                    }
+                                }
+                            }
+                        }
+
+                        SharedStateObj.MessageQueue.Clear();
+                    }
                 }
             }        
         }
@@ -168,8 +173,8 @@ namespace anotherNetworkingTest.Server
 
         public void Process(Object o)
         {
-            Interlocked.Increment(ref ((SharedState)o).NumberOfClients);
-            SharedState SharedStateObj = (SharedState)o;
+            Interlocked.Increment(ref ((ServerSharedStateObject)o).NumberOfClients);
+            ServerSharedStateObject SharedStateObj = (ServerSharedStateObject)o;
 
             //incoming data from client
             string data = null;
@@ -183,7 +188,7 @@ namespace anotherNetworkingTest.Server
             {
                 NetworkStream networkStream = ClientSocket.GetStream();
                 ClientSocket.ReceiveTimeout = 100; // 1000 milliseconds
-
+                
                 while (SharedStateObj.ContinueProcess)
                 {
                     bytes = new byte[ClientSocket.ReceiveBufferSize];

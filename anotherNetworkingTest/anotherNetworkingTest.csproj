@@ -52,9 +52,9 @@
       <Project>{97c05238-e983-4f9e-8c86-d71e5fda62b2}</Project>
       <Name>DefaultPackage</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MessagingBase\MessagingBase.csproj">
-      <Project>{f72b0c3d-4058-4c42-b60d-2de84492676a}</Project>
-      <Name>MessagingBase</Name>
+    <ProjectReference Include="..\NetworkingCore\NetworkingCore.csproj">
+      <Project>{b79ff125-0d80-4a55-b796-e46a5ac46914}</Project>
+      <Name>NetworkingCore</Name>
     </ProjectReference>
     <ProjectReference Include="..\SpecialPackage\SpecialPackage.csproj">
       <Project>{b0f3832e-8dd8-41f4-ab1a-6fbcd16b7bd1}</Project>

@@ -1,8 +1,5 @@
-﻿using MessagingBase;
+﻿using NetworkingCore;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace SpecialPackage.Messages
 {
@@ -10,12 +7,15 @@ namespace SpecialPackage.Messages
     {
         public string Data { get; set; }
 
-        public BasicMessage(string data)
+        public string Sender { get; private set; }
+
+        public BasicMessage(string data, string sender)
         {
             this.Data = data;
+            this.Sender = data;
         }
 
-        public void ProcessMessage()
+        public void ProcessMessage(params object[] argsList)
         {
             Console.WriteLine(this.Data);
         }

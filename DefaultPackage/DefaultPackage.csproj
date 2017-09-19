@@ -44,11 +44,10 @@
     <Compile Include="Messages\SpecialMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
-    <ProjectReference Include="..\MessagingBase\MessagingBase.csproj">
-      <Project>{f72b0c3d-4058-4c42-b60d-2de84492676a}</Project>
-      <Name>MessagingBase</Name>
+    <ProjectReference Include="..\NetworkingCore\NetworkingCore.csproj">
+      <Project>{b79ff125-0d80-4a55-b796-e46a5ac46914}</Project>
+      <Name>NetworkingCore</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
