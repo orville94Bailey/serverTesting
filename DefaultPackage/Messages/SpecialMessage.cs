@@ -1,5 +1,6 @@
 ﻿using NetworkingCore;
 using System;
+using System.Collections.Generic;
 
 namespace DefaultPackage.Messages
 {
@@ -9,16 +10,24 @@ namespace DefaultPackage.Messages
 
         public string Sender { get; private set; }
 
+        Guid IMessage.Sender => throw new NotImplementedException();
+
+        public List<Guid> Recipients { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
         public SpecialMessage(string data, string sender)
         {
             this.Data = data;
             this.Sender = sender;
         }
 
-        public void ProcessMessage(params object[] argsList)
+        public void ClientProcessMessage(params object[] argsList)
         {
-            Console.WriteLine(Data);
-            Console.WriteLine(Data);
+            throw new NotImplementedException();
+        }
+
+        public void ServerProcessMessage(params object[] argsList)
+        {
+            throw new NotImplementedException();
         }
     }
 }

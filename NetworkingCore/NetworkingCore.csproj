@@ -42,6 +42,7 @@
     <Compile Include="Messages\ConnectMessage.cs" />
     <Compile Include="MessageHandler\ConnectMessageHandler.cs" />
     <Compile Include="Messages\IMessage.cs" />
+    <Compile Include="Messages\ServerMessageWrapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SharedStateObjects\ClientSharedStateObject.cs" />
     <Compile Include="SharedStateObjects\ServerSharedStateObject.cs" />

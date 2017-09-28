@@ -10,6 +10,7 @@ namespace NetworkingCore.SharedStateObjects
     {
         public bool ContinueProcess;
         public AutoResetEvent Ev;
-        public Queue<IMessage> MessageQueue;
+        public Queue<IMessage> InBoundMessageQueue;
+        public Queue<IMessage> OutBoundMessageQueue;
     }
 }

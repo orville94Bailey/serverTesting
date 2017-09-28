@@ -7,7 +7,9 @@ namespace NetworkingCore
 {
     public interface IMessage
     {
-        string Sender { get; }
-        void ProcessMessage(params object[] argsList);
+        Guid Sender { get; }
+        List<Guid> Recipients { get; set; }
+        void ClientProcessMessage(params object[] argsList);
+        void ServerProcessMessage(params object[] argsList);
     }
 }

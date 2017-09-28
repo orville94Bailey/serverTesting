@@ -26,13 +26,13 @@ namespace SpecialPackage.Handlers
         public override void ClientProcessMessage(IMessage message)
         {
             Console.WriteLine(HandlerData);
-            message.ProcessMessage();
+            message.ClientProcessMessage();
         }
 
         public override void ServerProcessMessage(IMessage message, object o)
         {
             Console.WriteLine(HandlerData);
-            message.ProcessMessage();
+            message.ServerProcessMessage();
         }
 
         public SpecialHandler()
