@@ -13,7 +13,7 @@ namespace NetworkingCore.SharedStateObjects
         public int NumberOfClients;
         public AutoResetEvent Ev;
         public Queue<IMessage> InBoundMessageQueue;
-        public Dictionary<Guid, TcpClient> ClientQueue;
+        public Dictionary<Guid, NetworkStream> ClientQueue;
         public Queue<IMessage> OutBoundMessageQueue;
     }
 }

@@ -32,7 +32,8 @@ namespace anotherNetworkingTest.Server
                 NumberOfClients = 0,
                 Ev = new AutoResetEvent(false),
                 InBoundMessageQueue = new Queue<IMessage>(),
-                ClientQueue = new Dictionary<Guid, TcpClient>()
+                ClientQueue = new Dictionary<Guid, NetworkStream>(),
+                OutBoundMessageQueue = new Queue<IMessage>()
             };
 
             // Console.WriteLine(System.Net.IPAddress.Parse("127.0.0.1"));
@@ -138,27 +139,44 @@ namespace anotherNetworkingTest.Server
                                 foreach (var handler in handlerList[item.GetType()])
                                 {
                                     handler.ServerProcessMessage(item, SharedStateObj);
-
-                                    var DataToSend = "Server Response" + DateTime.Now.ToString("HH:mm:ss");
-                                    var message = new BasicMessage(DataToSend, "server");
-
-                                    var jsonMessage = JsonConvert.SerializeObject(message, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Objects });
-
-                                    Byte[] sendBytes = Encoding.ASCII.GetBytes(jsonMessage);
-
-                                    foreach (var client in SharedStateObj.ClientQueue.Keys)
-                                    {
-                                        Console.WriteLine("Message sent to " + client.ToString());
-                                        SharedStateObj.ClientQueue[client].GetStream().Write(sendBytes, 0, sendBytes.Length);
-                                    }
                                 }
                             }
                         }
-
                         SharedStateObj.InBoundMessageQueue.Clear();
                     }
                 }
             }        
+        }
+    }
+
+    class OutBoundMessageQueueProcessor
+    {
+        public static void Process(object o)
+        {
+            ServerSharedStateObject SharedStateObj = (ServerSharedStateObject)o;
+
+            while (SharedStateObj.ContinueProcess)
+            {
+                if (SharedStateObj.OutBoundMessageQueue.Count > 0)
+                {
+                    foreach (var message in SharedStateObj.OutBoundMessageQueue)
+                    {
+                        lock (SharedStateObj.OutBoundMessageQueue)
+                        {
+                            foreach (var recipient in message.Recipients)
+                            {
+                                if(SharedStateObj.ClientQueue.ContainsKey(recipient))
+                                {
+                                    var jsonMessage = JsonConvert.SerializeObject(message, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Objects });
+                                    Byte[] sendBytes = Encoding.ASCII.GetBytes(jsonMessage);
+
+                                    SharedStateObj.ClientQueue[recipient].Write(sendBytes, 0, sendBytes.Length);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -208,10 +226,6 @@ namespace anotherNetworkingTest.Server
                                 SharedStateObj.InBoundMessageQueue.Enqueue(receivedMessage);
                             }
 
-                            ////Echo the data back to the client
-                            //byte[] sendingBytes = Encoding.ASCII.GetBytes(data);
-                            //networkStream.Write(sendingBytes, 0, sendingBytes.Length);
-
                             if (data.Equals("quit")) break;
                         }
                     }
@@ -238,95 +252,6 @@ namespace anotherNetworkingTest.Server
             {
                 SharedStateObj.Ev.Set();
             }
-        }
-    }
-
-    class MessageQueueSender
-    {
-        public static void Send(Object o)
-        {
-            ServerSharedStateObject SharedStateObj = (ServerSharedStateObject)o;
-
-            if(SharedStateObj.ClientQueue.Count > 0 && SharedStateObj.OutBoundMessageQueue.Count > 0)
-            {
-                foreach (var message in SharedStateObj.OutBoundMessageQueue)
-                {
-                    foreach (var client in SharedStateObj.ClientQueue)
-                    {
-                        if (true)
-                        {
-
-                        }
-                    }
-                }
-            }
-
-            //Dictionary<Type, List<BaseMessageHandler>> handlerList = new Dictionary<Type, List<BaseMessageHandler>>();
-
-
-            //// Get a list of all types in the default dll assembly.
-            //var currentPackage = ConfigurationManager.AppSettings["RulesPackage"];
-            //var holder = Assembly.LoadFrom(AppDomain.CurrentDomain.BaseDirectory + currentPackage + @".dll").GetTypes().ToList();
-
-            //List<BaseMessageHandler> handlerHolder = new List<BaseMessageHandler>();
-
-
-            //foreach (var item in holder)
-            //{
-            //    // Go through each type and check to see if it extends BaseMessageHandler and that it has a parameterless constructor
-            //    if (item.BaseType.Equals(typeof(BaseMessageHandler)) && !item.GetConstructor(Type.EmptyTypes).Equals(null))
-            //    {
-            //        // Instanciates objects that match the above criterium
-            //        handlerHolder.Add((BaseMessageHandler)Activator.CreateInstance(item));
-            //    }
-            //}
-
-            ////build dictionary of lists based on type of messages
-            //foreach (var item in handlerHolder)
-            //{
-            //    if (!handlerList.Keys.Contains(item.HandledMessageType))
-            //    {
-            //        handlerList.Add(item.HandledMessageType, new List<BaseMessageHandler>());
-            //    }
-            //    handlerList[item.HandledMessageType].Add(item);
-            //}
-
-            //while (SharedStateObj.ContinueProcess)
-            //{
-            //    if (SharedStateObj.InBoundMessageQueue.Count > 0)
-            //    {
-            //        Console.WriteLine("################\n################");
-            //        Console.WriteLine("Message queue processing\n");
-            //        lock (SharedStateObj.InBoundMessageQueue)
-            //        {
-            //            foreach (var item in SharedStateObj.InBoundMessageQueue)
-            //            {
-            //                if (handlerList.Keys.Contains(item.GetType()))
-            //                {
-            //                    foreach (var handler in handlerList[item.GetType()])
-            //                    {
-            //                        handler.ServerProcessMessage(item, SharedStateObj);
-
-            //                        var DataToSend = "Server Response" + DateTime.Now.ToString("HH:mm:ss");
-            //                        var message = new BasicMessage(DataToSend, "server");
-
-            //                        var jsonMessage = JsonConvert.SerializeObject(message, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Objects });
-
-            //                        Byte[] sendBytes = Encoding.ASCII.GetBytes(jsonMessage);
-
-            //                        foreach (var client in SharedStateObj.ClientQueue.Keys)
-            //                        {
-            //                            Console.WriteLine("Message sent to " + client.ToString());
-            //                            SharedStateObj.ClientQueue[client].GetStream().Write(sendBytes, 0, sendBytes.Length);
-            //                        }
-            //                    }
-            //                }
-            //            }
-
-            //            SharedStateObj.InBoundMessageQueue.Clear();
-            //        }
-            //    }
-            //}
         }
     }
 }

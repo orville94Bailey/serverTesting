@@ -27,6 +27,10 @@ namespace NetworkingCore
 
             var SharedStateObj = (ServerSharedStateObject)o;
 
+            lock (SharedStateObj.ClientQueue)
+            {
+                SharedStateObj.ClientQueue.Add(Guid.NewGuid,)
+            }
         }
     }
 }
