@@ -60,6 +60,13 @@ namespace anotherNetworkingTest.Server
                     {
                         Console.WriteLine("Client# {0} accepted!", ++ClientNbr);
                         //An incoming connection needs to be processed
+                        /* Send the server connect messages and handle the response?
+                         */
+
+                        var connectionMessage = new ConnectMessage();
+                        connectionMessage.
+                        handler.GetStream().Write();
+
                         ClientHandler client = new ClientHandler(handler);
                         ThreadPool.QueueUserWorkItem(new WaitCallback(client.Process), SharedStateObj);
 
@@ -85,7 +92,6 @@ namespace anotherNetworkingTest.Server
             Console.WriteLine("\nHit enter to continue...");
             Console.Read();
         }
-        
     }
 
     class MessageQueueProcessor
