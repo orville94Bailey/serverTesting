@@ -12,12 +12,13 @@ using System.Threading;
 using System.Reflection;
 using NetworkingCore.SharedStateObjects;
 using NetworkingCore;
+using NetworkingCore.Messages;
 
 namespace clientTesting
 {
     public static class client
     {
-        private static ClientSharedStateObject SharedStateObj;
+        public static ClientSharedStateObject SharedStateObj;
 
         public static void Run(IPAddress address, int portNum)
         {
@@ -25,7 +26,7 @@ namespace clientTesting
             {
                 ContinueProcess = true,
                 Ev = new AutoResetEvent(false),
-                InBoundMessageQueue = new Queue<IMessage>(),
+                InBoundMessageQueue = new Queue<BaseMessage>(),
                 OutBoundMessageQueue = new Queue<IMessage>()
             };
 
@@ -121,7 +122,7 @@ namespace clientTesting
 
             string data = null;
 
-            IMessage receivedMessage = null;
+            BaseMessage receivedMessage = null;
 
             byte[] bytes;
 
@@ -144,7 +145,7 @@ namespace clientTesting
                         {
                             data = Encoding.ASCII.GetString(bytes, 0, bytesRead);
 
-                            receivedMessage = (IMessage)JsonConvert.DeserializeObject(data, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Auto });
+                            receivedMessage = (BaseMessage)JsonConvert.DeserializeObject(data, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Auto });
 
                             lock (sharedStateObj.InBoundMessageQueue)
                             {
@@ -214,7 +215,7 @@ namespace clientTesting
                             {
                                 foreach (var handler in handlerList[item.GetType()])
                                 {
-                                    handler.ClientProcessMessage(item);
+                                    handler.ClientProcessMessage(item, SharedStateObj);
                                 }
                             }
                         }

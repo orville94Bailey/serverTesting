@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NetworkingCore.Messages;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,7 +11,8 @@ namespace NetworkingCore.SharedStateObjects
     {
         public bool ContinueProcess;
         public AutoResetEvent Ev;
-        public Queue<IMessage> InBoundMessageQueue;
+        public Queue<BaseMessage> InBoundMessageQueue;
         public Queue<IMessage> OutBoundMessageQueue;
+        public Guid ClientID;
     }
 }

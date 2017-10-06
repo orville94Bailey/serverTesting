@@ -39,6 +39,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MessageHandler\BaseMessageHandler.cs" />
+    <Compile Include="Messages\BaseMessage.cs" />
     <Compile Include="Messages\ConnectMessage.cs" />
     <Compile Include="MessageHandler\ConnectMessageHandler.cs" />
     <Compile Include="Messages\IMessage.cs" />

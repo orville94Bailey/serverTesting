@@ -13,7 +13,7 @@ namespace NetworkingCore.SharedStateObjects
         public bool ContinueProcess;
         public int NumberOfClients;
         public AutoResetEvent Ev;
-        public Queue<IMessage> InBoundMessageQueue;
+        public Queue<BaseMessage> InBoundMessageQueue;
         public Dictionary<Guid, NetworkStream> ClientQueue;
         public Queue<ServerMessageWrapper> OutBoundMessageQueue;
     }

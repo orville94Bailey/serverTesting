@@ -1,4 +1,6 @@
-﻿ using System;
+﻿using NetworkingCore.Messages;
+using NetworkingCore.SharedStateObjects;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,9 +16,9 @@ namespace NetworkingCore
             get { return null; }
         }
 
-        public abstract void ClientProcessMessage(IMessage message);
+        public abstract void ClientProcessMessage(BaseMessage message, ClientSharedStateObject sharedStateObj);
 
-        public abstract void ServerProcessMessage(IMessage message, object o);
+        public abstract void ServerProcessMessage(BaseMessage message, object o);
 
     }
 }
