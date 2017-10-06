@@ -7,8 +7,8 @@ namespace NetworkingCore.Messages
 {
     public sealed class ServerMessageWrapper
     {
-        public IMessage MessageToSend { get; private set; }
-        public List<Guid> TargetClients { get; private set; }
+        public IMessage MessageToSend { get; set; }
+        public List<Guid> TargetClients { get; set; }
 
         /// <summary>
         /// Creates a new instance of the ServerMessageWrapper Class.
@@ -19,6 +19,10 @@ namespace NetworkingCore.Messages
         {
             this.MessageToSend = MessageToSend;
             this.TargetClients = TargetClients;
+        }
+
+        public ServerMessageWrapper()
+        {
         }
     }
 }

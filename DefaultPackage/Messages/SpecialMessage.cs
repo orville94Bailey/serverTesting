@@ -10,8 +10,6 @@ namespace DefaultPackage.Messages
 
         public string Sender { get; private set; }
 
-        Guid IMessage.Sender => throw new NotImplementedException();
-
         public List<Guid> Recipients { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         public SpecialMessage(string data, string sender)

@@ -11,6 +11,7 @@ using System.Configuration;
 using DefaultPackage.Messages;
 using NetworkingCore.SharedStateObjects;
 using NetworkingCore;
+using NetworkingCore.Messages;
 
 namespace anotherNetworkingTest.Server
 {
@@ -33,7 +34,7 @@ namespace anotherNetworkingTest.Server
                 Ev = new AutoResetEvent(false),
                 InBoundMessageQueue = new Queue<IMessage>(),
                 ClientQueue = new Dictionary<Guid, NetworkStream>(),
-                OutBoundMessageQueue = new Queue<IMessage>()
+                OutBoundMessageQueue = new Queue<ServerMessageWrapper>()
             };
 
             // Console.WriteLine(System.Net.IPAddress.Parse("127.0.0.1"));
@@ -51,6 +52,7 @@ namespace anotherNetworkingTest.Server
                 Console.WriteLine("Waiting for a connection...");
 
                 ThreadPool.QueueUserWorkItem(new WaitCallback(MessageQueueProcessor.Process), SharedStateObj);
+                ThreadPool.QueueUserWorkItem(new WaitCallback(OutBoundMessageQueueProcessor.Process), SharedStateObj);
 
                 while (TestingCycle > 0)
                 {
@@ -60,13 +62,6 @@ namespace anotherNetworkingTest.Server
                     {
                         Console.WriteLine("Client# {0} accepted!", ++ClientNbr);
                         //An incoming connection needs to be processed
-                        /* Send the server connect messages and handle the response?
-                         */
-
-                        var connectionMessage = new ConnectMessage();
-                        connectionMessage.
-                        handler.GetStream().Write();
-
                         ClientHandler client = new ClientHandler(handler);
                         ThreadPool.QueueUserWorkItem(new WaitCallback(client.Process), SharedStateObj);
 
@@ -92,6 +87,7 @@ namespace anotherNetworkingTest.Server
             Console.WriteLine("\nHit enter to continue...");
             Console.Read();
         }
+        
     }
 
     class MessageQueueProcessor
@@ -163,25 +159,44 @@ namespace anotherNetworkingTest.Server
 
             while (SharedStateObj.ContinueProcess)
             {
-                if (SharedStateObj.OutBoundMessageQueue.Count > 0)
+                while (SharedStateObj.OutBoundMessageQueue.Count > 0)
                 {
-                    foreach (var message in SharedStateObj.OutBoundMessageQueue)
+                    lock (SharedStateObj.OutBoundMessageQueue)
                     {
-                        lock (SharedStateObj.OutBoundMessageQueue)
-                        {
-                            foreach (var recipient in message.Recipients)
-                            {
-                                if(SharedStateObj.ClientQueue.ContainsKey(recipient))
-                                {
-                                    var jsonMessage = JsonConvert.SerializeObject(message, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Objects });
-                                    Byte[] sendBytes = Encoding.ASCII.GetBytes(jsonMessage);
+                        var wrappedMessage = SharedStateObj.OutBoundMessageQueue.Dequeue();
 
-                                    SharedStateObj.ClientQueue[recipient].Write(sendBytes, 0, sendBytes.Length);
-                                }
+                        var jsonMessage = JsonConvert.SerializeObject(wrappedMessage.MessageToSend, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Objects });
+                        Byte[] sendBytes = Encoding.ASCII.GetBytes(jsonMessage);
+
+                        foreach (var recipient in wrappedMessage.TargetClients)
+                        {
+                            if(SharedStateObj.ClientQueue.Keys.Contains(recipient))
+                            {
+                                SharedStateObj.ClientQueue[recipient].Write(sendBytes, 0, sendBytes.Length);
                             }
                         }
                     }
                 }
+                //if (SharedStateObj.OutBoundMessageQueue.Count > 0)
+                //{
+                //    foreach (var message in SharedStateObj.OutBoundMessageQueue)
+                //    {
+                //        lock (SharedStateObj.OutBoundMessageQueue)
+                //        {
+                //            foreach (var recipient in message.TargetClients)
+                //            {
+                //                if(SharedStateObj.ClientQueue.ContainsKey(recipient))
+                //                {
+                //                    var jsonMessage = JsonConvert.SerializeObject(message.MessageToSend, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Objects });
+                //                    Byte[] sendBytes = Encoding.ASCII.GetBytes(jsonMessage);
+
+                //                    SharedStateObj.ClientQueue[recipient].Write(sendBytes, 0, sendBytes.Length);
+                //                }
+                //            }
+                //            SharedStateObj.OutBoundMessageQueue.Dequeue();
+                //        }
+                //    }
+                //}
             }
         }
     }
@@ -212,6 +227,24 @@ namespace anotherNetworkingTest.Server
             {
                 NetworkStream networkStream = ClientSocket.GetStream();
                 ClientSocket.ReceiveTimeout = 100; // 1000 milliseconds
+                var guidHolder = Guid.NewGuid();
+
+                lock (SharedStateObj.ClientQueue)
+                {
+                    SharedStateObj.ClientQueue.Add(guidHolder, networkStream);
+                }
+
+                lock (SharedStateObj.OutBoundMessageQueue)
+                {
+                    SharedStateObj.OutBoundMessageQueue.Enqueue
+                        (
+                            new ServerMessageWrapper
+                            {
+                                TargetClients = new List<Guid>(new Guid[] { guidHolder }),
+                                MessageToSend = new ConnectMessage { clientID = guidHolder }
+                            }
+                        );
+                }
                 
                 while (SharedStateObj.ContinueProcess)
                 {

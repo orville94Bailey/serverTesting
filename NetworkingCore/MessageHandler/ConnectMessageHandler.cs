@@ -24,13 +24,6 @@ namespace NetworkingCore
         {
             /* Here we will send the client it's guid
              */
-
-            var SharedStateObj = (ServerSharedStateObject)o;
-
-            lock (SharedStateObj.ClientQueue)
-            {
-                SharedStateObj.ClientQueue.Add(Guid.NewGuid,)
-            }
         }
     }
 }

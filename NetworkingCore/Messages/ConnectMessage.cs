@@ -10,10 +10,8 @@ namespace NetworkingCore
     public class ConnectMessage : IMessage
     {
         public string Sender { get; private set; }
-        public List<Guid> Recipients { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
-        Guid IMessage.Sender => throw new NotImplementedException();
-
+        public Guid clientID { get; set; }
 
         public void ClientProcessMessage(params object[] argsList)
         {

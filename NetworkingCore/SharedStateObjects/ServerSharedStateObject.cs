@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NetworkingCore.Messages;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
@@ -14,6 +15,6 @@ namespace NetworkingCore.SharedStateObjects
         public AutoResetEvent Ev;
         public Queue<IMessage> InBoundMessageQueue;
         public Dictionary<Guid, NetworkStream> ClientQueue;
-        public Queue<IMessage> OutBoundMessageQueue;
+        public Queue<ServerMessageWrapper> OutBoundMessageQueue;
     }
 }
