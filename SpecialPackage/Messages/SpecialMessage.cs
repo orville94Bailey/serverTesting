@@ -10,14 +10,9 @@ namespace SpecialPackage.Messages
     {
         public string Data { get; set; }
 
-        public string Sender { get; private set; }
-
-        public List<Guid> Recipients { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
-        public SpecialMessage(string data, string sender)
+        public SpecialMessage(Guid clientID, string data) : base(clientID)
         {
             this.Data = data;
-            this.Sender = sender;
         }
 
         public override void ClientProcessMessage(ClientSharedStateObject SharedStateObj)

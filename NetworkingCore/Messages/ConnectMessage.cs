@@ -11,6 +11,11 @@ namespace NetworkingCore
     /// </summary>
     public class ConnectMessage : BaseMessage
     {
+        public ConnectMessage(Guid serverID, Guid clientID) : base(serverID)
+        {
+            this.clientID = clientID;
+        }
+
         public Guid clientID { get; set; }
 
         public override void ClientProcessMessage(ClientSharedStateObject SharedStateObj)

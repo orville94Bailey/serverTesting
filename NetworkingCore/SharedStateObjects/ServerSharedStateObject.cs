@@ -16,5 +16,6 @@ namespace NetworkingCore.SharedStateObjects
         public Queue<BaseMessage> InBoundMessageQueue;
         public Dictionary<Guid, NetworkStream> ClientQueue;
         public Queue<ServerMessageWrapper> OutBoundMessageQueue;
+        public Guid serverID;
     }
 }

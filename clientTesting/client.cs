@@ -65,17 +65,18 @@ namespace clientTesting
 
                         if(!DataToSend.Equals("special"))
                         {
-                            message = new BasicMessage (DataToSend, tcpClient.Client.LocalEndPoint.ToString());
+                            message = new BasicMessage (SharedStateObj.ClientID, DataToSend);
                         }
                         else
                         {
-                            message = new SpecialMessage(DataToSend, tcpClient.Client.LocalEndPoint.ToString());
+                            message = new SpecialMessage(SharedStateObj.ClientID, DataToSend);
                         }
 
                         lock (SharedStateObj.OutBoundMessageQueue)
                         {
                             SharedStateObj.OutBoundMessageQueue.Enqueue(message);
                         }
+                        Thread.Sleep(100);
                     }
                     networkStream.Close();
                     tcpClient.Close();
@@ -223,6 +224,7 @@ namespace clientTesting
                         SharedStateObj.InBoundMessageQueue.Clear();
                     }
                 }
+                Thread.Sleep(100);
             }
         }
     }
@@ -260,6 +262,7 @@ namespace clientTesting
                         SharedStateObj.OutBoundMessageQueue.Clear();
                     }
                 }
+                Thread.Sleep(100);
             }
             clientStream.Close();
         }

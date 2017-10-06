@@ -34,7 +34,8 @@ namespace anotherNetworkingTest.Server
                 Ev = new AutoResetEvent(false),
                 InBoundMessageQueue = new Queue<BaseMessage>(),
                 ClientQueue = new Dictionary<Guid, NetworkStream>(),
-                OutBoundMessageQueue = new Queue<ServerMessageWrapper>()
+                OutBoundMessageQueue = new Queue<ServerMessageWrapper>(),
+                serverID = Guid.NewGuid()
             };
 
             // Console.WriteLine(System.Net.IPAddress.Parse("127.0.0.1"));
@@ -69,6 +70,8 @@ namespace anotherNetworkingTest.Server
                     }
                     else
                         break;
+
+                    Thread.Sleep(100);
 
                 }
 
@@ -147,6 +150,7 @@ namespace anotherNetworkingTest.Server
                         SharedStateObj.InBoundMessageQueue.Clear();
                     }
                 }
+                Thread.Sleep(100);
             }        
         }
     }
@@ -159,24 +163,29 @@ namespace anotherNetworkingTest.Server
 
             while (SharedStateObj.ContinueProcess)
             {
-                while (SharedStateObj.OutBoundMessageQueue.Count > 0)
+                if(SharedStateObj.OutBoundMessageQueue.Count > 0)
                 {
-                    lock (SharedStateObj.OutBoundMessageQueue)
+                    while (SharedStateObj.OutBoundMessageQueue.Count > 0)
                     {
-                        var wrappedMessage = SharedStateObj.OutBoundMessageQueue.Dequeue();
-
-                        var jsonMessage = JsonConvert.SerializeObject(wrappedMessage.MessageToSend, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Objects });
-                        Byte[] sendBytes = Encoding.ASCII.GetBytes(jsonMessage);
-
-                        foreach (var recipient in wrappedMessage.TargetClients)
+                        lock (SharedStateObj.OutBoundMessageQueue)
                         {
-                            if(SharedStateObj.ClientQueue.Keys.Contains(recipient))
+                            var wrappedMessage = SharedStateObj.OutBoundMessageQueue.Dequeue();
+
+                            var jsonMessage = JsonConvert.SerializeObject(wrappedMessage.MessageToSend, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Objects });
+                            Byte[] sendBytes = Encoding.ASCII.GetBytes(jsonMessage);
+
+                            foreach (var recipient in wrappedMessage.TargetClients)
                             {
-                                SharedStateObj.ClientQueue[recipient].Write(sendBytes, 0, sendBytes.Length);
+                                if(SharedStateObj.ClientQueue.Keys.Contains(recipient))
+                                {
+                                    SharedStateObj.ClientQueue[recipient].Write(sendBytes, 0, sendBytes.Length);
+                                }
                             }
                         }
                     }
                 }
+                Thread.Sleep(100);
+                
                 //if (SharedStateObj.OutBoundMessageQueue.Count > 0)
                 //{
                 //    foreach (var message in SharedStateObj.OutBoundMessageQueue)
@@ -241,7 +250,7 @@ namespace anotherNetworkingTest.Server
                             new ServerMessageWrapper
                             {
                                 TargetClients = new List<Guid>(new Guid[] { guidHolder }),
-                                MessageToSend = new ConnectMessage { clientID = guidHolder }
+                                MessageToSend = new ConnectMessage(SharedStateObj.serverID, guidHolder)
                             }
                         );
                 }
@@ -267,6 +276,7 @@ namespace anotherNetworkingTest.Server
 
                             if (data.Equals("quit")) break;
                         }
+                        Thread.Sleep(100);
                     }
                     catch (IOException) { }//timeout
                     catch (SocketException)

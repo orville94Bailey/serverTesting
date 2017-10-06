@@ -9,15 +9,11 @@ namespace DefaultPackage.Messages
     public class BasicMessage : BaseMessage
     {
         public string Data { get; set; }
-        public string Sender { get; private set; }
 
         public List<Guid> Recipients { get; set ; }
 
-        public BasicMessage(string data, string sender)
+        public BasicMessage(Guid clientID, string data) : base(clientID)
         {
-            this.Data = data;
-            this.Sender = sender;
-
         }
 
         public override void ClientProcessMessage(ClientSharedStateObject SharedStateObj)
