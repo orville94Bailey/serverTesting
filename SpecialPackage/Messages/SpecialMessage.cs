@@ -1,10 +1,12 @@
 ﻿using NetworkingCore;
+using NetworkingCore.Messages;
 using System;
 using System.Collections.Generic;
+using NetworkingCore.SharedStateObjects;
 
 namespace SpecialPackage.Messages
 {
-    public class SpecialMessage : IMessage
+    public class SpecialMessage : BaseMessage
     {
         public string Data { get; set; }
 
@@ -18,12 +20,12 @@ namespace SpecialPackage.Messages
             this.Sender = sender;
         }
 
-        public void ClientProcessMessage(params object[] argsList)
+        public override void ClientProcessMessage(ClientSharedStateObject SharedStateObj)
         {
             throw new NotImplementedException();
         }
 
-        public void ServerProcessMessage(params object[] argsList)
+        public override void ServerProcessMessage(ServerSharedStateObject SharedStateObj)
         {
             throw new NotImplementedException();
         }

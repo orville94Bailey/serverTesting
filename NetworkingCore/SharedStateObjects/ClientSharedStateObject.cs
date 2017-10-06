@@ -12,7 +12,7 @@ namespace NetworkingCore.SharedStateObjects
         public bool ContinueProcess;
         public AutoResetEvent Ev;
         public Queue<BaseMessage> InBoundMessageQueue;
-        public Queue<IMessage> OutBoundMessageQueue;
+        public Queue<BaseMessage> OutBoundMessageQueue;
         public Guid ClientID;
     }
 }

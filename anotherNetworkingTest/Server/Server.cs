@@ -32,7 +32,7 @@ namespace anotherNetworkingTest.Server
                 ContinueProcess = true,
                 NumberOfClients = 0,
                 Ev = new AutoResetEvent(false),
-                InBoundMessageQueue = new Queue<IMessage>(),
+                InBoundMessageQueue = new Queue<BaseMessage>(),
                 ClientQueue = new Dictionary<Guid, NetworkStream>(),
                 OutBoundMessageQueue = new Queue<ServerMessageWrapper>()
             };
@@ -218,7 +218,7 @@ namespace anotherNetworkingTest.Server
             //incoming data from client
             string data = null;
 
-            IMessage receivedMessage = null;
+            BaseMessage receivedMessage = null;
 
             //data buffer coming in
             byte[] bytes;
@@ -256,7 +256,7 @@ namespace anotherNetworkingTest.Server
                         {
                             data = Encoding.ASCII.GetString(bytes, 0, BytesRead);
 
-                            receivedMessage = (IMessage)JsonConvert.DeserializeObject(data, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Auto });
+                            receivedMessage = (BaseMessage)JsonConvert.DeserializeObject(data, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Auto });
 
                             // show the data in the console
                             Console.WriteLine("Text Received: {0}", data);

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NetworkingCore.SharedStateObjects;
+using NetworkingCore.Messages;
 
 namespace DefaultPackage.Handlers
 {
@@ -19,22 +20,14 @@ namespace DefaultPackage.Handlers
             get { return typeof(BasicMessage); }
         }
 
-        //public override void ClientProcessMessage(IMessage message)
-        //{
-        //    Console.WriteLine(HandlerData);
-        //    message.ClientProcessMessage();
-        //}
-
-        public override void ServerProcessMessage(IMessage message, object o)
+        public override void ClientProcessMessage(BaseMessage message, ClientSharedStateObject sharedStateObj)
         {
-            Console.WriteLine(HandlerData);
-            message.ServerProcessMessage();
+            throw new NotImplementedException();
         }
 
-        public override void ClientProcessMessage(IMessage message, ClientSharedStateObject sharedStateObj)
+        public override void ServerProcessMessage(BaseMessage message, object o)
         {
-            Console.WriteLine(HandlerData);
-            message.ClientProcessMessage();
+            throw new NotImplementedException();
         }
 
         public BasicMessageHandler()

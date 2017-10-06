@@ -27,11 +27,11 @@ namespace clientTesting
                 ContinueProcess = true,
                 Ev = new AutoResetEvent(false),
                 InBoundMessageQueue = new Queue<BaseMessage>(),
-                OutBoundMessageQueue = new Queue<IMessage>()
+                OutBoundMessageQueue = new Queue<BaseMessage>()
             };
 
             TcpClient tcpClient = new TcpClient();
-            IMessage message = null;
+            BaseMessage message = null;
             try
             {
                 tcpClient.Connect(address, portNum);

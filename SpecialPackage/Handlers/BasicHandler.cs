@@ -1,6 +1,8 @@
 ﻿using SpecialPackage.Messages;
 using System;
 using NetworkingCore;
+using NetworkingCore.Messages;
+using NetworkingCore.SharedStateObjects;
 
 namespace SpecialPackage.Handlers
 {
@@ -25,16 +27,28 @@ namespace SpecialPackage.Handlers
             get { return typeof(BasicMessage); }
         }
 
-        public override void ClientProcessMessage(IMessage message)
+        //public override void ClientProcessMessage(IMessage message)
+        //{
+        //    Console.WriteLine(HandlerData);
+        //    message.ClientProcessMessage();
+        //}
+
+        //public override void ServerProcessMessage(IMessage message, object os)
+        //{
+        //    Console.WriteLine(HandlerData);
+        //    message.ServerProcessMessage(); 
+        //}
+
+        public override void ClientProcessMessage(BaseMessage message, ClientSharedStateObject sharedStateObj)
         {
             Console.WriteLine(HandlerData);
-            message.ClientProcessMessage();
+            message.ClientProcessMessage(sharedStateObj);
         }
 
-        public override void ServerProcessMessage(IMessage message, object os)
+        public override void ServerProcessMessage(BaseMessage message, object o)
         {
             Console.WriteLine(HandlerData);
-            message.ServerProcessMessage(); 
+            //message.ServerProcessMessage();
         }
 
         public BasicMessageHandler()

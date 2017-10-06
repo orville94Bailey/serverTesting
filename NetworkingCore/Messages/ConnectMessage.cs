@@ -15,7 +15,7 @@ namespace NetworkingCore
 
         public override void ClientProcessMessage(ClientSharedStateObject SharedStateObj)
         {
-            //SharedStateObj.ClientID = 
+            SharedStateObj.ClientID = this.clientID;
         }
 
         public override void ServerProcessMessage(ServerSharedStateObject SharedStateObj)
