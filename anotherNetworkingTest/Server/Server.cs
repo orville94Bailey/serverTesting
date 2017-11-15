@@ -44,6 +44,8 @@ namespace anotherNetworkingTest.Server
                 typeHolder.AddRange(Assembly.LoadFrom(AppDomain.CurrentDomain.BaseDirectory + currentPackage + @".dll").GetTypes().ToList());
             }
 
+            #region Building message handling dictionary
+
             List<BaseMessageHandler> handlerHolder = new List<BaseMessageHandler>();
 
             foreach (var item in typeHolder)
@@ -66,6 +68,9 @@ namespace anotherNetworkingTest.Server
                 handlerDictionary[item.HandledMessageType].Add(item);
             }
 
+            #endregion
+
+            ThreadPool.QueueUserWorkItem(new WaitCallback(MessageSender.Process), SharedStateObj);
         }
 
         public void EnqueueMessage(ServerMessageWrapper wrappedMessage)
@@ -111,9 +116,6 @@ namespace anotherNetworkingTest.Server
 
                 // Start listeneing for new connections
                 Console.WriteLine("Waiting for a connection...");
-
-                ThreadPool.QueueUserWorkItem(new WaitCallback(MessageHandler.Process), SharedStateObj);
-                ThreadPool.QueueUserWorkItem(new WaitCallback(MessageSender.Process), SharedStateObj);
 
                 while (TestingCycle > 0)
                 {
