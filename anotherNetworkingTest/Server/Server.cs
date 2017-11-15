@@ -8,25 +8,23 @@ using System.Text;
 using System.Threading;
 using System.Reflection;
 using System.Configuration;
-using DefaultPackage.Messages;
-using NetworkingCore.SharedStateObjects;
 using NetworkingCore;
 using NetworkingCore.Messages;
+using NetworkingCore.SharedStateObjects;
 
 namespace anotherNetworkingTest.Server
 {
     class Server
     {
-        /* Server needs a threadpool to handle incomming connections.
-         * A Listening thread
-         * A Reclaim thread
-         * A way to stop the server
-         */
-        private const int portNum = 55555;
-        private static ServerSharedStateObject SharedStateObj;
+        //private const int portNum = 55555;
+        private int portNum;
+        public ServerSharedStateObject SharedStateObj;
+        private Dictionary<Type, List<BaseMessageHandler>> handlerDictionary { get; set; }
 
-        public static void StartListening()
+        public Server(int portNum)
         {
+            this.portNum = portNum;
+
             SharedStateObj = new ServerSharedStateObject()
             {
                 ContinueProcess = true,
@@ -38,7 +36,69 @@ namespace anotherNetworkingTest.Server
                 serverID = Guid.NewGuid()
             };
 
-            // Console.WriteLine(System.Net.IPAddress.Parse("127.0.0.1"));
+            var packageHolder = ConfigurationManager.AppSettings["RulesPackages"].Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+
+            List<Type> typeHolder = new List<Type>();
+            foreach (var currentPackage in packageHolder)
+            {
+                typeHolder.AddRange(Assembly.LoadFrom(AppDomain.CurrentDomain.BaseDirectory + currentPackage + @".dll").GetTypes().ToList());
+            }
+
+            List<BaseMessageHandler> handlerHolder = new List<BaseMessageHandler>();
+
+            foreach (var item in typeHolder)
+            {
+                // Go through each type and check to see if it extends BaseMessageHandler and that it has a parameterless constructor
+                if (item.BaseType.Equals(typeof(BaseMessageHandler)) && !item.GetConstructor(Type.EmptyTypes).Equals(null))
+                {
+                    // Instanciates objects that match the above criterium
+                    handlerHolder.Add((BaseMessageHandler)Activator.CreateInstance(item));
+                }
+            }
+
+            //build dictionary of lists based on type of messages
+            foreach (var item in handlerHolder)
+            {
+                if (!handlerDictionary.Keys.Contains(item.HandledMessageType))
+                {
+                    handlerDictionary.Add(item.HandledMessageType, new List<BaseMessageHandler>());
+                }
+                handlerDictionary[item.HandledMessageType].Add(item);
+            }
+
+        }
+
+        public void EnqueueMessage(ServerMessageWrapper wrappedMessage)
+        {
+            lock (SharedStateObj.OutBoundMessageQueue)
+            {
+                SharedStateObj.OutBoundMessageQueue.Enqueue(wrappedMessage);
+            }
+        }
+
+        public void HandleMessages()
+        {
+            if (SharedStateObj.InBoundMessageQueue.Count > 0)
+            {
+                lock (SharedStateObj.InBoundMessageQueue)
+                {
+                    foreach (var item in SharedStateObj.InBoundMessageQueue)
+                    {
+                        if (handlerDictionary.Keys.Contains(item.GetType()))
+                        {
+                            foreach (var handler in handlerDictionary[item.GetType()])
+                            {
+                                handler.ServerProcessMessage(item, SharedStateObj);
+                            }
+                        }
+                    }
+                    SharedStateObj.InBoundMessageQueue.Clear();
+                }
+            }
+        }
+
+        public void StartListening()
+        {
 
             TcpListener Listener = new TcpListener( System.Net.IPAddress.Any ,portNum);
 
@@ -52,8 +112,8 @@ namespace anotherNetworkingTest.Server
                 // Start listeneing for new connections
                 Console.WriteLine("Waiting for a connection...");
 
-                ThreadPool.QueueUserWorkItem(new WaitCallback(MessageQueueProcessor.Process), SharedStateObj);
-                ThreadPool.QueueUserWorkItem(new WaitCallback(OutBoundMessageQueueProcessor.Process), SharedStateObj);
+                ThreadPool.QueueUserWorkItem(new WaitCallback(MessageHandler.Process), SharedStateObj);
+                ThreadPool.QueueUserWorkItem(new WaitCallback(MessageSender.Process), SharedStateObj);
 
                 while (TestingCycle > 0)
                 {
@@ -63,7 +123,7 @@ namespace anotherNetworkingTest.Server
                     {
                         Console.WriteLine("Client# {0} accepted!", ++ClientNbr);
                         //An incoming connection needs to be processed
-                        ClientHandler client = new ClientHandler(handler);
+                        Listener client = new Listener(handler);
                         ThreadPool.QueueUserWorkItem(new WaitCallback(client.Process), SharedStateObj);
 
                         --TestingCycle;
@@ -90,72 +150,9 @@ namespace anotherNetworkingTest.Server
             Console.WriteLine("\nHit enter to continue...");
             Console.Read();
         }
-        
     }
 
-    class MessageQueueProcessor
-    {
-        public static void Process(Object o)
-        {
-            ServerSharedStateObject SharedStateObj = (ServerSharedStateObject)o;
-
-            Dictionary<Type, List<BaseMessageHandler>> handlerList = new Dictionary<Type, List<BaseMessageHandler>>();
-
-
-            // Get a list of all types in the default dll assembly.
-            var currentPackage = ConfigurationManager.AppSettings["RulesPackage"];
-            var holder = Assembly.LoadFrom(AppDomain.CurrentDomain.BaseDirectory + currentPackage + @".dll").GetTypes().ToList(); 
-
-            List<BaseMessageHandler> handlerHolder = new List<BaseMessageHandler>();
-
-
-            foreach (var item in holder)
-            {
-                // Go through each type and check to see if it extends BaseMessageHandler and that it has a parameterless constructor
-                if(item.BaseType.Equals(typeof(BaseMessageHandler)) && !item.GetConstructor(Type.EmptyTypes).Equals(null))
-                {
-                    // Instanciates objects that match the above criterium
-                    handlerHolder.Add((BaseMessageHandler)Activator.CreateInstance(item));
-                }
-            }
-
-            //build dictionary of lists based on type of messages
-            foreach (var item in handlerHolder)
-            {
-                if(!handlerList.Keys.Contains(item.HandledMessageType))
-                {
-                    handlerList.Add(item.HandledMessageType, new List<BaseMessageHandler>());
-                }
-                handlerList[item.HandledMessageType].Add(item);
-            }
-
-            while (SharedStateObj.ContinueProcess)
-            {
-                if(SharedStateObj.InBoundMessageQueue.Count > 0)
-                {
-                    Console.WriteLine("################\n################");
-                    Console.WriteLine("Message queue processing\n");
-                    lock (SharedStateObj.InBoundMessageQueue)
-                    {
-                        foreach (var item in SharedStateObj.InBoundMessageQueue)
-                        {
-                            if(handlerList.Keys.Contains(item.GetType()))
-                            {
-                                foreach (var handler in handlerList[item.GetType()])
-                                {
-                                    handler.ServerProcessMessage(item, SharedStateObj);
-                                }
-                            }
-                        }
-                        SharedStateObj.InBoundMessageQueue.Clear();
-                    }
-                }
-                Thread.Sleep(100);
-            }        
-        }
-    }
-
-    class OutBoundMessageQueueProcessor
+    class MessageSender
     {
         public static void Process(object o)
         {
@@ -185,36 +182,15 @@ namespace anotherNetworkingTest.Server
                     }
                 }
                 Thread.Sleep(100);
-                
-                //if (SharedStateObj.OutBoundMessageQueue.Count > 0)
-                //{
-                //    foreach (var message in SharedStateObj.OutBoundMessageQueue)
-                //    {
-                //        lock (SharedStateObj.OutBoundMessageQueue)
-                //        {
-                //            foreach (var recipient in message.TargetClients)
-                //            {
-                //                if(SharedStateObj.ClientQueue.ContainsKey(recipient))
-                //                {
-                //                    var jsonMessage = JsonConvert.SerializeObject(message.MessageToSend, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Objects });
-                //                    Byte[] sendBytes = Encoding.ASCII.GetBytes(jsonMessage);
-
-                //                    SharedStateObj.ClientQueue[recipient].Write(sendBytes, 0, sendBytes.Length);
-                //                }
-                //            }
-                //            SharedStateObj.OutBoundMessageQueue.Dequeue();
-                //        }
-                //    }
-                //}
             }
         }
     }
 
-    class ClientHandler
+    class Listener
     {
         TcpClient ClientSocket;
 
-        public ClientHandler (TcpClient ClientSocket)
+        public Listener (TcpClient ClientSocket)
         {
             this.ClientSocket = ClientSocket;
         }

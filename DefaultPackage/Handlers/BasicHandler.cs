@@ -25,9 +25,9 @@ namespace DefaultPackage.Handlers
             throw new NotImplementedException();
         }
 
-        public override void ServerProcessMessage(BaseMessage message, object o)
+        public override void ServerProcessMessage(BaseMessage message, ServerSharedStateObject sharedStateObj)
         {
-            throw new NotImplementedException();
+            message.ServerProcessMessage(sharedStateObj);
         }
 
         public BasicMessageHandler()

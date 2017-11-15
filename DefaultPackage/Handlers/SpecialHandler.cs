@@ -24,7 +24,7 @@ namespace DefaultPackage.Handlers
             message.ClientProcessMessage(sharedStateObj);
         }
 
-        public override void ServerProcessMessage(BaseMessage message, object o)
+        public override void ServerProcessMessage(BaseMessage message, ServerSharedStateObject sharedStateObj)
         {
             Console.WriteLine(HandlerData);
             //message.ServerProcessMessage();

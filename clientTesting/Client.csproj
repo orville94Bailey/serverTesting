@@ -32,9 +32,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\anotherNetworkingTest\packages\Newtonsoft.Json.10.0.3\lib\net35\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net35\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -42,25 +43,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="client.cs" />
+    <Compile Include="Client\Client.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\anotherNetworkingTest\DefaultPackage\DefaultPackage.csproj">
+    <ProjectReference Include="..\DefaultPackage\DefaultPackage.csproj">
       <Project>{97c05238-e983-4f9e-8c86-d71e5fda62b2}</Project>
       <Name>DefaultPackage</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\anotherNetworkingTest\NetworkingCore\NetworkingCore.csproj">
+    <ProjectReference Include="..\NetworkingCore\NetworkingCore.csproj">
       <Project>{b79ff125-0d80-4a55-b796-e46a5ac46914}</Project>
       <Name>NetworkingCore</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\anotherNetworkingTest\SpecialPackage\SpecialPackage.csproj">
-      <Project>{b0f3832e-8dd8-41f4-ab1a-6fbcd16b7bd1}</Project>
-      <Name>SpecialPackage</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

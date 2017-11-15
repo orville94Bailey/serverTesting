@@ -14,6 +14,7 @@ namespace DefaultPackage.Messages
 
         public BasicMessage(Guid clientID, string data) : base(clientID)
         {
+            Data = data;
         }
 
         public override void ClientProcessMessage(ClientSharedStateObject SharedStateObj)
@@ -23,7 +24,7 @@ namespace DefaultPackage.Messages
 
         public override void ServerProcessMessage(ServerSharedStateObject SharedStateObj)
         {
-            throw new NotImplementedException();
+            Console.WriteLine(Data);
         }
     }
 }

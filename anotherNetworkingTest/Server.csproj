@@ -56,13 +56,11 @@
       <Project>{b79ff125-0d80-4a55-b796-e46a5ac46914}</Project>
       <Name>NetworkingCore</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SpecialPackage\SpecialPackage.csproj">
-      <Project>{b0f3832e-8dd8-41f4-ab1a-6fbcd16b7bd1}</Project>
-      <Name>SpecialPackage</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -4,11 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
-using DefaultPackage.Messages;
 using Newtonsoft.Json;
 using System.Net;
+using System.Threading;
 
-namespace clientTesting
+namespace Client
 {
     class Program
     {
@@ -17,6 +17,7 @@ namespace clientTesting
         static void Main(string[] args)
         {
             IPAddress address;
+            Client testClient;
 
             try
             {
@@ -28,7 +29,34 @@ namespace clientTesting
                 throw;
             }
 
-            client.Run(address,portNum);
+            testClient = new Client(address, portNum);
+
+            while(testClient.SharedStateObj.ClientID.Equals(Guid.Empty))
+            {
+                testClient.HandleMessages();
+                Thread.Sleep(100);
+            }
+
+            string data;
+            while (testClient.SharedStateObj.ContinueProcess)
+            {
+                #region Process messages
+                testClient.HandleMessages();
+                #endregion
+
+                #region Build Messages
+                data = Console.ReadLine();
+
+                if (!data.ToUpper().Equals("QUIT"))
+                {
+                    testClient.EnqueueMessage(new DefaultPackage.Messages.BasicMessage(testClient.SharedStateObj.ClientID, data));
+                }
+                else
+                {
+                    testClient.SharedStateObj.ContinueProcess = false;
+                }
+                #endregion
+            }
         }
     }
 }

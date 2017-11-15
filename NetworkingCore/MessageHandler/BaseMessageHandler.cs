@@ -18,7 +18,7 @@ namespace NetworkingCore
 
         public abstract void ClientProcessMessage(BaseMessage message, ClientSharedStateObject sharedStateObj);
 
-        public abstract void ServerProcessMessage(BaseMessage message, object o);
+        public abstract void ServerProcessMessage(BaseMessage message, ServerSharedStateObject sharedStateObj);
 
     }
 }

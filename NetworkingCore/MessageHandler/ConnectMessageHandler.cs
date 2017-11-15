@@ -17,7 +17,7 @@ namespace NetworkingCore
             message.ClientProcessMessage(sharedStateObj);
         }
 
-        public override void ServerProcessMessage(BaseMessage message, object o)
+        public override void ServerProcessMessage(BaseMessage message, ServerSharedStateObject sharedStateObj)
         {
             throw new NotImplementedException();
         }

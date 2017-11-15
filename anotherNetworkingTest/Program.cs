@@ -12,7 +12,8 @@ namespace anotherNetworkingTest
     {
         public static int Main(String[] args)
         {
-            Server.Server.StartListening();
+            var server = new Server.Server(55555);
+            server.StartListening();
             return 0;
         }
     }
