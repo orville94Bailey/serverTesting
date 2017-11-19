@@ -24,6 +24,7 @@ namespace anotherNetworkingTest.Server
         public Server(int portNum)
         {
             this.portNum = portNum;
+            handlerDictionary = new Dictionary<Type, List<BaseMessageHandler>>();
 
             SharedStateObj = new ServerSharedStateObject()
             {
@@ -37,6 +38,7 @@ namespace anotherNetworkingTest.Server
             };
 
             var packageHolder = ConfigurationManager.AppSettings["RulesPackages"].Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+            packageHolder.Add("NetworkingCore");
 
             List<Type> typeHolder = new List<Type>();
             foreach (var currentPackage in packageHolder)
@@ -44,17 +46,20 @@ namespace anotherNetworkingTest.Server
                 typeHolder.AddRange(Assembly.LoadFrom(AppDomain.CurrentDomain.BaseDirectory + currentPackage + @".dll").GetTypes().ToList());
             }
 
-            #region Building message handling dictionary
+             #region Building message handling dictionary
 
             List<BaseMessageHandler> handlerHolder = new List<BaseMessageHandler>();
 
             foreach (var item in typeHolder)
             {
-                // Go through each type and check to see if it extends BaseMessageHandler and that it has a parameterless constructor
-                if (item.BaseType.Equals(typeof(BaseMessageHandler)) && !item.GetConstructor(Type.EmptyTypes).Equals(null))
+                if(item.BaseType != null)
                 {
-                    // Instanciates objects that match the above criterium
-                    handlerHolder.Add((BaseMessageHandler)Activator.CreateInstance(item));
+                    // Go through each type and check to see if it extends BaseMessageHandler and that it has a parameterless constructor
+                    if (item.BaseType.Equals(typeof(BaseMessageHandler)) && !item.GetConstructor(Type.EmptyTypes).Equals(null))
+                    {
+                        // Instanciates objects that match the above criterium
+                        handlerHolder.Add((BaseMessageHandler)Activator.CreateInstance(item));
+                    }
                 }
             }
 
@@ -71,6 +76,7 @@ namespace anotherNetworkingTest.Server
             #endregion
 
             ThreadPool.QueueUserWorkItem(new WaitCallback(MessageSender.Process), SharedStateObj);
+            ThreadPool.QueueUserWorkItem(new WaitCallback(ClientConnector.Process),SharedStateObj);
         }
 
         public void EnqueueMessage(ServerMessageWrapper wrappedMessage)
@@ -117,7 +123,7 @@ namespace anotherNetworkingTest.Server
                 // Start listeneing for new connections
                 Console.WriteLine("Waiting for a connection...");
 
-                while (TestingCycle > 0)
+                while (SharedStateObj.ContinueProcess)
                 {
                     TcpClient handler = Listener.AcceptTcpClient();
 
@@ -151,6 +157,53 @@ namespace anotherNetworkingTest.Server
 
             Console.WriteLine("\nHit enter to continue...");
             Console.Read();
+        }
+    }
+
+    class ClientConnector
+    {
+        public static void Process(object o)
+        {
+            ServerSharedStateObject SharedStateObj = (ServerSharedStateObject)o;
+
+            TcpListener Listener = new TcpListener(System.Net.IPAddress.Any, 55555);
+
+            try
+            {
+                Listener.Start();
+
+                int TestingCycle = 3;
+                int ClientNbr = 0;
+
+                // Start listeneing for new connections
+                Console.WriteLine("Waiting for a connection...");
+
+                while (SharedStateObj.ContinueProcess)
+                {
+                    TcpClient handler = Listener.AcceptTcpClient();
+
+                    if (handler != null)
+                    {
+                        Console.WriteLine("Client# {0} accepted!", ++ClientNbr);
+                        //An incoming connection needs to be processed
+                        Listener client = new Listener(handler);
+                        ThreadPool.QueueUserWorkItem(new WaitCallback(client.Process), SharedStateObj);
+
+                        --TestingCycle;
+                    }
+                    else
+                        break;
+
+                    Thread.Sleep(100);
+
+                }
+
+                Listener.Stop();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
         }
     }
 
@@ -244,9 +297,6 @@ namespace anotherNetworkingTest.Server
                             data = Encoding.ASCII.GetString(bytes, 0, BytesRead);
 
                             receivedMessage = (BaseMessage)JsonConvert.DeserializeObject(data, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Auto });
-
-                            // show the data in the console
-                            Console.WriteLine("Text Received: {0}", data);
                             lock (SharedStateObj.InBoundMessageQueue)
                             {
                                 SharedStateObj.InBoundMessageQueue.Enqueue(receivedMessage);

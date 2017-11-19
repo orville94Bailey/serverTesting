@@ -13,7 +13,16 @@ namespace anotherNetworkingTest
         public static int Main(String[] args)
         {
             var server = new Server.Server(55555);
-            server.StartListening();
+            //server.StartListening();
+
+            while (server.SharedStateObj.ContinueProcess)
+            {
+                if (server.SharedStateObj.InBoundMessageQueue.Count > 0)
+                {
+                    server.HandleMessages();
+                }
+                Thread.Sleep(1000);
+            }
             return 0;
         }
     }

@@ -24,7 +24,11 @@ namespace DefaultPackage.Messages
 
         public override void ServerProcessMessage(ServerSharedStateObject SharedStateObj)
         {
-            Console.WriteLine(Data);
+            Console.WriteLine("Received from: " + this.Sender + "\n \t" + "Contained Data: " + Data);
+            if (Data.ToUpper().Equals("QUIT"))
+            {
+                SharedStateObj.ContinueProcess = false;
+            }
         }
     }
 }

@@ -28,6 +28,7 @@ namespace DefaultPackage.Handlers
         public override void ServerProcessMessage(BaseMessage message, ServerSharedStateObject sharedStateObj)
         {
             message.ServerProcessMessage(sharedStateObj);
+
         }
 
         public BasicMessageHandler()
