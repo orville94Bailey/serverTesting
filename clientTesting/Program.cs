@@ -47,14 +47,24 @@ namespace Client
                 #region Build Messages
                 data = Console.ReadLine();
 
-                if (!data.ToUpper().Equals("QUIT"))
+                switch (data)
                 {
-                    testClient.EnqueueMessage(new DefaultPackage.Messages.BasicMessage(testClient.SharedStateObj.ClientID, data));
+                    case "routedMessage":
+                        testClient.EnqueueMessage(new NetworkingCore.Messages.RoutedMessage(data, testClient.SharedStateObj.ClientID));
+                        break;
+                    default:
+                        testClient.EnqueueMessage(new DefaultPackage.Messages.BasicMessage(testClient.SharedStateObj.ClientID, data));
+                        if (data.ToUpper().Equals("QUIT"))
+                        {
+                            testClient.SharedStateObj.ContinueProcess = false;
+                        }
+                        break;
                 }
-                else
-                {
-                    testClient.SharedStateObj.ContinueProcess = false;
-                }
+
+                //else
+                //{
+                //    testClient.SharedStateObj.ContinueProcess = false;
+                //}
                 #endregion
             }
         }
