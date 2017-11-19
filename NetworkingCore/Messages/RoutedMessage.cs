@@ -10,16 +10,19 @@ namespace NetworkingCore.Messages
     {
         public string Data { get; set; }
         public Guid RoutedThrough { get; set; }
+        public DateTime creationDate { get; set; }
 
         public RoutedMessage(string Data, Guid clientID) : base(clientID)
         {
             this.Data = Data;
+            creationDate = DateTime.Now;
         }
         public override void ClientProcessMessage(ClientSharedStateObject SharedStateObj)
         {
             Console.WriteLine("Sent from: " + this.Sender);
             Console.WriteLine("\tData: " + this.Data);
             Console.WriteLine("\tRouted through: " + this.RoutedThrough);
+            Console.WriteLine("\tCreation Date" + this.creationDate.ToLongTimeString());
         }
 
         public override void ServerProcessMessage(ServerSharedStateObject SharedStateObj)
@@ -33,6 +36,7 @@ namespace NetworkingCore.Messages
             Console.WriteLine("Sent from: " + this.Sender);
             Console.WriteLine("\tData: " + this.Data);
             Console.WriteLine("\tRouted through: " + this.RoutedThrough);
+            Console.WriteLine("\tCreation Date" + this.creationDate.ToLongTimeString());
         }
     }
 }

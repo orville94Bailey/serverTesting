@@ -180,7 +180,7 @@ namespace Client
 
             string data = null;
 
-            BaseMessage receivedMessage = null;
+            List<BaseMessage> receivedMessages = null;
 
             byte[] bytes;
 
@@ -199,19 +199,27 @@ namespace Client
                         {
                             bytesRead = networkStream.Read(bytes, 0, (int)ClientSocket.ReceiveBufferSize);
                         }
-                        if(bytesRead > 0)
+                        if (bytesRead > 0)
                         {
                             data = Encoding.ASCII.GetString(bytes, 0, bytesRead);
+                            data = data.Replace("}{\"$type\":", "},{\"$type\":");
 
-                            receivedMessage = (BaseMessage)JsonConvert.DeserializeObject(data, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Auto });
+                            receivedMessages = JsonConvert.DeserializeObject<List<BaseMessage>>("[" + data + "]", new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Auto });
 
                             lock (sharedStateObj.InBoundMessageQueue)
                             {
-                                sharedStateObj.InBoundMessageQueue.Enqueue(receivedMessage);
+                                foreach (var message in receivedMessages)
+                                {
+                                    sharedStateObj.InBoundMessageQueue.Enqueue(message);
+                                }
                             }
                         }
                     }
                     catch (IOException) { } // Timeout 
+                    catch (JsonSerializationException e)
+                    {
+                        Console.WriteLine(e);
+                    }
                     catch (SocketException)
                     {
                         Console.WriteLine("Socket is broken.");

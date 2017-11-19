@@ -258,7 +258,7 @@ namespace anotherNetworkingTest.Server
             //incoming data from client
             string data = null;
 
-            BaseMessage receivedMessage = null;
+            List<BaseMessage> receivedMessages = new List<BaseMessage>();
 
             //data buffer coming in
             byte[] bytes;
@@ -295,11 +295,16 @@ namespace anotherNetworkingTest.Server
                         if (BytesRead > 0)
                         {
                             data = Encoding.ASCII.GetString(bytes, 0, BytesRead);
+                            data = data.Replace("}{\"$type\":", "},{\"$type\":");
 
-                            receivedMessage = (BaseMessage)JsonConvert.DeserializeObject(data, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Auto });
+                            //receivedMessages = (BaseMessage)JsonConvert.DeserializeObject( "[" + data + "]" /*data*/, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Auto });
+                            receivedMessages = JsonConvert.DeserializeObject<List<BaseMessage>>("[" + data + "]", new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Auto, });
                             lock (SharedStateObj.InBoundMessageQueue)
                             {
-                                SharedStateObj.InBoundMessageQueue.Enqueue(receivedMessage);
+                                foreach (var message in receivedMessages)
+                                {
+                                    SharedStateObj.InBoundMessageQueue.Enqueue(message);
+                                }
                             }
 
                             if (data.Equals("quit")) break;
